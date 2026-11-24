@@ -1,0 +1,10 @@
+{
+  "editor.fontLigatures": true,
+  "editor.lineHeight": 1.5,
+  "terminal.integrated.fontFamily": "",
+  "terminal.integrated.fontSize": 13,
+  "files.autoSave": "afterDelay",
+  "C_Cpp.errorSquiggles": "disabled",
+  "workbench.colorTheme": "Dark 2026",
+  "C_Cpp.formatting": "clangFormat"
+}

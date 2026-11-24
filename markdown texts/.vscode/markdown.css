@@ -1,0 +1,65 @@
+/* ===== 让普通正文保持亮白 ===== */
+.markdown-body,
+.markdown-body p,
+.markdown-body li,
+.markdown-body blockquote,
+.markdown-body span,
+.markdown-body div {
+    color: #ffffff !important;
+}
+
+/* 标题 */
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3 {
+    color: #ffffff !important;
+}
+
+/* 注意：这里不要写 color: xxx !important，否则会覆盖高亮插件（如 highlight.js）的颜色 */
+
+/* ===== KaTeX 报错信息强制红色 ===== */
+.katex-error,
+.katex .error,
+.katex-html .error,
+.katex .parse-error,
+.katex .katex-error,
+.markdown-body [class*="error"],
+.markdown-body [class*="Error"] {
+    color: #ff0000 !important;
+}
+
+/* ===== 强制 Markdown 中的 LaTeX (KaTeX) 公式变为亮白色 ===== */
+
+/* 1. 覆盖公式内的所有普通文本、数学符号 */
+.markdown-body .katex,
+.markdown-body .katex * {
+    color: #ffffff !important;
+}
+
+/* 2. 处理分数线、上划线、下划线 (KaTeX 常用 border 渲染) */
+.markdown-body .katex .frac-line,
+.markdown-body .katex .overline .overline-line,
+.markdown-body .katex .underline .underline-line,
+.markdown-body .katex .sqrt > .sqrt-line,
+.markdown-body .katex .hline {
+    border-color: #ffffff !important;
+    background-color: #ffffff !important;
+}
+
+/* 3. 处理 SVG 绘制的符号 (如根号的外形、大括号等) */
+.markdown-body .katex svg,
+.markdown-body .katex svg path {
+    fill: #ffffff !important;
+    stroke: #ffffff !important;
+}
+
+/* 4. 保留报错信息为红色 (覆盖上面的白色，保证报错清晰可见) */
+/* 注意：这里使用更高优先级的选择器 */
+.markdown-body .katex-error,
+.markdown-body .katex-error *,
+.markdown-body .katex .error,
+.markdown-body [class*="error"] {
+    color: #ff0000 !important;
+    fill: #ff0000 !important;
+    stroke: #ff0000 !important;
+}
