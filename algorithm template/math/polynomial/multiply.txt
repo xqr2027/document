@@ -1,0 +1,24 @@
+Poly multiply(Poly a,Poly b)
+{
+    if(a.empty()||b.empty())return {};
+    int len=1;
+    int la=a.size();
+    int lb=b.size();
+    if(min(la,lb)<=256)
+    {
+        Poly res(la+lb-1);
+        for(int i=0;i<la;++i)
+            for(int j=0;j<lb;++j)
+                res[i+j]+=a[i]*b[j];
+        return res;
+    }
+    while(len<la+lb-1)len<<=1;
+    a.resize(len);
+    b.resize(len);
+    ntt(a,false);
+    ntt(b,false);
+    for(int i=0;i<len;++i)a[i]*=b[i];
+    ntt(a,true);
+    a.resize(la+lb-1);
+    return a;
+}

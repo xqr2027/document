@@ -1,0 +1,56 @@
+#include<bits/stdc++.h>
+using namespace std;
+#define int long long
+struct SegTree
+{
+    #define mid ((l+r)>>1)
+    struct node_t
+    {
+        int ls,rs,sum;        
+        node_t():ls(0),rs(0),sum(0){}
+        node_t(int ls,int rs,int sum):ls(ls),rs(rs),sum(sum){}
+    };
+    vector<node_t>node;
+    int newnode()
+    {
+        node.emplace_back();
+        return node.size()-1;
+    }
+    void clear()
+    {
+        node.clear();
+        newnode();
+    }
+    SegTree(){clear();}
+    int build(int p,int l,int r,vector<int>& a)
+    {
+        if(!p)p=newnode();
+        if(l==r)
+        {
+            node[p].sum=a[l];
+            return p;
+        }
+        node[p].ls=build(node[p].ls,l,mid,a);
+        node[p].rs=build(node[p].rs,mid+1,r,a);
+    }
+    int insert(int pre,int l,int r,int x)
+    {
+        int p=newnode();
+        node[p]=node[pre];
+        node[p].sum++;
+        if(l==r)return p;
+        if(x<=mid)node[p].ls=insert(node[pre].ls,l,mid,x);
+        else      node[p].rs=insert(node[pre].rs,mid+1,r,x);
+        return p;
+    }
+    int query_sum(int p,int l,int r,int s,int t)
+    {
+        if(t<s)return 0;
+        if(s<=l&&r<=t)return node[p].sum;
+        int res=0;
+        if(s<=mid)res+=query_sum(node[p].ls,l,mid,s,t);
+        if(t> mid)res+=query_sum(node[p].rs,mid+1,r,s,t);
+        return res;
+    }
+}tr;
+#undef mid

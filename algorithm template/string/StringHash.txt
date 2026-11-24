@@ -1,0 +1,22 @@
+using ull=unsigned long long;
+mt19937 rnd(chrono::high_resolution_clock::now().time_since_epoch().count());
+constexpr int maxn=5001;
+ull base=rnd()|1;
+ull pw[maxn]={1};
+void init(int n=maxn-1)
+{
+    for(int i=1;i<=n;++i)pw[i]=pw[i-1]*base;
+}
+struct Hash
+{
+    vector<ull>val;
+    Hash(const string& s):val(s.size()+1)
+    {
+        int n=s.size();
+        for(int i=0;i<n;++i)val[i+1]=base*val[i]+s[i];
+    }
+    ull get(int l,int r)
+    {
+        return val[r+1]-val[l]*pw[r-l+1];
+    }
+};

@@ -1,0 +1,67 @@
+constexpr int mod=998244353;
+struct mint 
+{
+public:
+    mint():val(0){}
+    mint(uint64_t a)
+    {
+        if(a<mod)val=a;
+        else val=a%mod;
+    }
+    mint operator-()const
+    {
+        mint res;
+        res.val=val==0?0:mod-val;
+        return res;
+    }
+    mint operator+(const mint& b)const
+    {
+        mint res;
+        res.val=val+b.val;
+        if(res.val>=mod)res.val-=mod;
+        return res;
+    }
+    mint operator-(const mint& b)const
+    {
+        mint res;
+        res.val=val+mod-b.val;
+        if(res.val>=mod)res.val-=mod;
+        return res;
+    }
+    mint operator*(const mint& b)const
+    {
+        mint res;
+        res.val=1ull*val*b.val%mod;
+        return res;
+    }
+    mint& operator+=(const mint& b)
+    {
+        val+=b.val;
+        if(val>=mod)val-=mod;
+        return*this;
+    }
+    mint& operator-=(const mint& b)
+    {
+        val+=mod-b.val;
+        if(val>=mod)val-=mod;
+        return*this;
+    }
+    mint& operator*=(const mint& b)
+    {
+        val=(uint32_t)(1ull*val*b.val%mod);
+        return*this;
+    }
+    friend istream& operator>>(istream& in,mint& a)
+    {
+        unsigned v;in>>v;
+        a=mint(v);
+        return in;
+    }
+    friend ostream& operator<<(ostream& out,const mint& a)
+    {
+        out<<a.val;
+        return out;
+    }
+private:
+    unsigned val;
+};

@@ -1,0 +1,97 @@
+#include<bits/stdc++.h>
+using namespace std;
+#define int long long
+constexpr int V=1<<30;
+// using ll=long long;
+struct SegTree
+{
+    #define mid ((l+r)>>1)
+    vector<int>remove;
+    struct node_t
+    {
+        int ls,rs;
+        int sum;
+        node_t(int ls=0,int rs=0,int cnt=0):ls(ls),rs(rs),sum(cnt){}
+    };
+    vector<node_t>node;
+    int root;
+    SegTree(){newnode();root=newnode();}
+    int newnode()
+    {
+        if(!remove.empty())
+        {
+            int u=remove.back();
+            remove.pop_back();
+            return u;
+        }
+        else
+        {
+            node.emplace_back();
+            return node.size()-1;
+        }
+    }
+    void delnode(int p)
+    {
+        node[p]=node_t();
+        remove.emplace_back(p);
+    }
+    void pushup(int p)
+    {
+        node[p].sum=0;
+        if(node[p].ls)node[p].sum+=node[node[p].ls].sum;
+        if(node[p].rs)node[p].sum+=node[node[p].rs].sum;
+    }
+    int insert(int p,int l,int r,int x)
+    {
+        if(!p)p=newnode();
+        if(l==r)
+        {
+            node[p].sum++;
+            return p;
+        }
+        if(x<=mid)node[p].ls=insert(node[p].ls,l,mid,x);
+        else node[p].rs=insert(node[p].rs,mid+1,r,x);
+        pushup(p);
+        return p;
+    }
+    void erase(int& p,int l,int r,int x)
+    {
+        if(!p)return;
+        if(l==r)
+        {
+            node[p].sum--;
+            if(!node[p].sum)
+            {
+                delnode(p);
+                p=0;
+            }
+            return;
+        }
+        if(x<=mid)erase(node[p].ls,l,mid,x);
+        else erase(node[p].rs,mid+1,r,x);
+        pushup(p);
+        if(!node[p].sum)
+        {
+            delnode(p);
+            p=0;
+        }
+        return;
+    }
+    int query_sum(int p,int l,int r,int s,int t)
+    {
+        if(!p||s>t)return 0;
+        if(s<=l&&r<=t)return node[p].sum;
+        int res=0;
+        if(s<=mid)res+=query_sum(node[p].ls,l,mid,s,t);
+        if(t> mid)res+=query_sum(node[p].rs,mid+1,r,s,t);
+        return res;
+    }
+    int find_kth(int p,int l,int r,int k)
+    {
+        if(!p)return -1;
+        if(l==r)return l;
+        int lsum=node[node[p].ls].sum;
+        if(lsum>=k)return find_kth(node[p].ls,l,mid,k);
+        return find_kth(node[p].rs,mid+1,r,k-lsum);
+    }
+};

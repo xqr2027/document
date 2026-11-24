@@ -1,0 +1,135 @@
+mt19937 rnd(chrono::steady_clock::now().time_since_epoch().count());
+struct treap
+{
+    struct node_t
+    {
+        int val;
+        unsigned pri;
+        int ls,rs;
+        int siz,cnt;
+        node_t():val(0),pri(rnd()),ls(0),rs(0),siz(0),cnt(0){}
+        node_t(int v):val(v),pri(rnd()),ls(0),rs(0),siz(1),cnt(1){}
+    };
+    vector<node_t>node;
+    int root;
+    treap():node()
+    {
+        node.reserve(1200000); 
+        root=newnode();
+    }
+    int newnode()
+    {
+        node.emplace_back();
+        return node.size()-1;
+    }
+    void pushup(int p)
+    {
+        node[p].siz=node[p].cnt;
+        if(node[p].ls)node[p].siz+=node[node[p].ls].siz;
+        if(node[p].rs)node[p].siz+=node[node[p].rs].siz;
+    }
+    void split(int rt,int key,int& left,int& right)
+    {
+        if(!rt)
+        {
+            left=right=0;
+            return;
+        }
+        if(node[rt].val>=key)
+        {
+            right=rt;
+            split(node[rt].ls,key,left,node[rt].ls);
+        }
+        else
+        {
+            left=rt;
+            split(node[rt].rs,key,node[rt].rs,right);
+        }
+        pushup(rt);
+    }
+    int merge(int left,int right)
+    {
+        if(!left||!right)return left|right;
+        if(node[left].pri>=node[right].pri)
+        {
+            node[left].rs=merge(node[left].rs,right);
+            pushup(left);
+            return left;
+        }
+        else 
+        {
+            node[right].ls=merge(left,node[right].ls);
+            pushup(right);
+            return right;
+        }
+    }
+    void insert(int x)
+    {
+        int left,mid,right;
+        split(root,x,left,mid);
+        split(mid,x+1,mid,right);
+        if(!mid)
+        {
+            mid=newnode();
+            node[mid]=node_t(x);
+        }
+        else node[mid].cnt++;
+        pushup(mid);
+        root=merge(merge(left,mid),right);
+    }
+    void erase(int x)
+    {
+        int left,mid,right;
+        split(root,x,left,mid);
+        split(mid,x+1,mid,right);
+        if(!mid||!--node[mid].cnt)root=merge(left,right);
+        else 
+        {
+            pushup(mid);
+            root=merge(merge(left,mid),right);
+        }
+    }
+    int find_kth(int k)
+    {
+        int x=root;
+        while(true)
+        {
+            int lsiz=node[node[x].ls].siz;
+            if(k<=lsiz)x=node[x].ls;
+            else if(k<=lsiz+node[x].cnt)return node[x].val;
+            else k-=lsiz+node[x].cnt,x=node[x].rs;
+        }
+    }
+    int find_rnk(int key)
+    {
+        int cur=root,res=0;
+        while(cur)
+        {
+            if(key<=node[cur].val)cur=node[cur].ls;
+            else res+=node[node[cur].ls].siz+node[cur].cnt,cur=node[cur].rs;
+        }
+        return res+1;
+    }
+    int find_pre(int key)
+    {
+        int cur=root;
+        int res=LLONG_MIN;
+        while(cur)
+        {
+            if(node[cur].val<key)res=node[cur].val,cur=node[cur].rs;
+            else cur=node[cur].ls;
+        }
+        return res;
+    }
+    int find_nxt(int key)
+    {
+        int cur=root;
+        int res=LLONG_MAX;
+        while(cur)
+        {
+            if(node[cur].val>key)res=node[cur].val,cur=node[cur].ls;
+            else cur=node[cur].rs;
+        }
+        return res;
+    }
+};

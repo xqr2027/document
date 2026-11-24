@@ -1,0 +1,32 @@
+auto get_pi(const string& s)// 1-indexed
+{
+    int n=s.size();
+    vector<int>pi(n);
+    int j=0;
+    for(int i=2;i<=n;++i)
+    {
+        while(j&&s[j+1]!=s[i])j=pi[j];
+        if(s[j+1]==s[i])++j;
+        pi[i]=j;
+    }
+    return pi;
+}
+auto kmp(const string& s,const string& t)// 1-indexed,in s find t
+{
+    int n=s.size();
+    int m=t.size();
+    auto pi=get_pi(t);
+    vector<int>pos;// answers
+    int j=0;
+    for(int i=1;i<=n;++i)
+    {
+        while(j&&s[i]!=t[j+1])j=pi[j];
+        if(s[i]==t[j+1])++j;
+        if(j==m)
+        {
+            pos.emplace_back(i-m+1);
+            j=pi[j];
+        }
+    }
+    return pos;
+}

@@ -1,0 +1,26 @@
+Poly inverse(Poly a)
+{
+    int n=a.size();
+    Poly B(1);
+    B[0]=qpow(a[0],mod-2);
+    int len=1;
+    while(len<n)
+    {
+        len<<=1;
+        int L=len<<1;
+        Poly fa(L),fb(L);
+        for(int i=0;i<len&&i<n;++i)fa[i]=a[i];
+        for(int i=0;i<len>>1;++i)fb[i]=B[i];
+        ntt(fa,false);
+        ntt(fb,false);
+        Poly fc(L);
+        for(int i=0;i<L;++i)
+            fc[i]=fa[i]*fb[i]*fb[i];
+        ntt(fc,true);
+        B.resize(len);
+        for(int i=len>>1;i<len;++i)
+            B[i]=-fc[i];
+    }
+    B.resize(n);
+    return B;
+}

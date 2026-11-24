@@ -1,0 +1,28 @@
+struct UnionFind
+{
+    vector<int>fa;
+    UnionFind(int n)
+    {
+        init(n);
+    }
+    void init(int n)
+    {
+        fa.assign(n+1,0);
+        for(int i=1;i<=n;++i)fa[i]=i;
+    }
+    int find(int x)
+    {
+        return fa[x]==x?x:fa[x]=find(fa[x]);
+    }
+    void merge(int u,int v)
+    {
+        u=find(u),v=find(v);
+        if(u==v)return;
+        fa[u]=v;
+    }
+    bool check(int u,int v)
+    {
+        u=find(u),v=find(v);
+        return u==v;
+    }
+};

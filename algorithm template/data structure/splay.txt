@@ -1,0 +1,172 @@
+struct SplayTree
+{
+    struct node_t
+    {
+        int val;    
+        int cnt,siz;      
+        node_t* fa;    
+        node_t* left;  
+        node_t* right;
+        node_t():val(0),cnt(0),siz(0),
+                fa(nullptr),left(nullptr),right(nullptr){}
+        node_t(int v):val(v),cnt(1),siz(1),
+                fa(nullptr),left(nullptr),right(nullptr){}
+    };
+    node_t* root;
+    SplayTree():root(nullptr){}
+    ~SplayTree()
+    {
+        destroy(root);
+        root=nullptr;
+    }
+    void destroy(node_t* x)
+    {
+        if(!x)return;
+        destroy(x->left);
+        destroy(x->right);
+        delete x;
+    }
+    bool cid(node_t* x){return x==x->fa->right;}
+    bool vid(node_t* x,int v){return v>x->val;}
+    void pushup(node_t* x)
+    {
+        if(!x)return;
+        x->siz=(x->left ?x->left ->siz:0)+
+               (x->right?x->right->siz:0)+x->cnt;
+    }
+    void rotate(node_t* x)
+    {
+        node_t* y=x->fa;
+        node_t* z=y->fa;
+        bool id=cid(x);
+        if(id)
+        {
+            y->right=x->left;
+            if(x->left)x->left->fa=y;
+            x->left=y;
+        }
+        else
+        {
+            y->left=x->right;
+            if(x->right)x->right->fa=y;
+            x->right=y;
+        }
+        y->fa=x;
+        x->fa=z;
+        if(z)
+        {
+            if(y==z->left)z->left=x;
+            else z->right=x;
+        }
+        pushup(y);
+        pushup(x);
+    }
+    void splay(node_t*& rt,node_t* x)
+    {
+        if(!x)return;
+        node_t* f=rt?rt->fa:nullptr;
+        while(x->fa!=f)
+        {
+            node_t* y=x->fa;
+            if(y->fa!=f)rotate(cid(x)==cid(y)?y:x);
+            rotate(x);
+        }
+        rt=x;
+    }
+    void find_val(node_t*& rt,int v)
+    {
+        if(!rt)return;
+        node_t* x=rt;
+        node_t* y=x->fa;
+        while(x&&x->val!=v)y=x,x=vid(x,v)?x->right:x->left;
+        splay(rt,x?x:y);
+    }
+    int find_kth(node_t*& rt,int k)
+    {
+        if(!rt)return -1;
+        if(k<0)k+=rt->siz+1;
+        if(k<1||k>rt->siz)return -1;
+        node_t* x=rt;
+        while(true)
+        {
+            int left_siz=x->left?x->left->siz:0;
+            if(left_siz>=k)x=x->left;
+            else if(left_siz+x->cnt>=k)break;
+            else k-=left_siz+x->cnt,x=x->right;
+        }
+        splay(rt,x);
+        return rt->val;
+    }
+    node_t* merge(node_t* x,node_t* y)
+    {
+        if(!x)return y;
+        if(!y)return x;
+        find_kth(y,1);
+        y->left=x;
+        x->fa=y;
+        pushup(y);
+        return y;
+    }
+    void insert(node_t*& rt,int v)
+    {
+        node_t* x=rt;
+        node_t* y=nullptr;
+        while(x&&x->val!=v)y=x,x=vid(x,v)?x->right:x->left;
+        if(x)
+        {
+            ++x->cnt;
+            pushup(x);
+        }
+        else
+        {
+            x=new node_t(v);
+            x->fa=y;
+            if(y)
+            {
+                if(vid(y,v))y->right=x;
+                else y->left=x;
+            }
+        }
+        splay(rt,x);
+    }
+    bool erase(int v)
+    {
+        if(!root)return 0;
+        find_val(root,v);
+        if(root->val!=v)return 0;
+       --root->cnt;
+       --root->siz;
+        if(!root->cnt)
+        {
+            node_t* left =root->left;
+            node_t* right=root->right;
+            if(left )left ->fa=nullptr;
+            if(right)right->fa=nullptr;
+            delete root;
+            root=merge(left,right);
+        }
+        else pushup(root);
+        return 1;
+    }
+    int find_rnk(int v)
+    {
+        find_val(root,v);
+        if(!root)return 1;
+        int left_siz=root->left?root->left->siz:0;
+        return left_siz+(root->val<v?root->cnt:0)+1;
+    }
+    int find_pre(int v)
+    {
+        find_val(root,v);
+        if(root&&root->val<v)return root->val;
+        if(!root||!root->left)return -1;
+        return find_kth(root->left,-1);
+    }
+    int find_nxt(int v)
+    {
+        find_val(root,v);
+        if(root&&root->val>v)return root->val;
+        if(!root||!root->right)return -1;
+        return find_kth(root->right,1);
+    }
+} tr;

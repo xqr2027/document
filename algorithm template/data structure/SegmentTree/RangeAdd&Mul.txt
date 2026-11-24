@@ -1,0 +1,99 @@
+int mod;
+struct SegTree
+{
+    #define ls (p<<1)
+    #define rs (p<<1|1)
+    #define mid ((l+r)>>1)
+    vector<int>sum;
+    vector<int>mul;
+    vector<int>add;
+    void assign(int n)
+    {
+        sum.assign(n<<2,0);
+        mul.assign(n<<2,1);
+        add.assign(n<<2,0);
+    }
+    void pushup(int p)
+    {
+        sum[p]=sum[ls]+sum[rs];
+        sum[p]%=mod;
+    }
+    void pushdown(int p,int l,int r)
+    {
+        if(mul[p]!=1)
+        {
+            add[ls]*=mul[p];
+            add[rs]*=mul[p];
+            sum[ls]*=mul[p];
+            sum[rs]*=mul[p];
+            mul[ls]*=mul[p];
+            mul[rs]*=mul[p];
+            add[ls]%=mod;
+            add[rs]%=mod;
+            mul[ls]%=mod;
+            mul[rs]%=mod;
+            sum[ls]%=mod;
+            sum[rs]%=mod;
+            mul[p]=1;
+        }
+        if(add[p]!=0)
+        {
+            add[ls]+=add[p];
+            add[rs]+=add[p];
+            sum[ls]+=add[p]*(mid-l+1);
+            sum[rs]+=add[p]*(r-mid);
+            add[ls]%=mod;
+            add[rs]%=mod;
+            sum[ls]%=mod;
+            sum[rs]%=mod;
+            add[p]=0;
+        }
+    }
+    void build(int p,int l,int r,const vector<int>& a)
+    {
+        if(l==r)
+        {
+            sum[p]=a[l];
+            return;
+        }
+        build(ls,l,mid,a);
+        build(rs,mid+1,r,a);
+        pushup(p);
+    }
+    void update_add(int p,int l,int r,int s,int t,int k)
+    {
+        if(s<=l&&r<=t)
+        {
+            sum[p]=(sum[p]+k*(r-l+1))%mod;
+            add[p]=(add[p]+k)%mod;
+            return;
+        }
+        pushdown(p,l,r);
+        if(s<=mid)update_add(ls,l,mid,s,t,k);
+        if(t> mid)update_add(rs,mid+1,r,s,t,k);
+        pushup(p);
+    }
+    void update_mul(int p,int l,int r,int s,int t,int k)
+    {
+        if(s<=l&&r<=t)
+        {
+            sum[p]=sum[p]*k%mod;
+            add[p]=add[p]*k%mod;
+            mul[p]=mul[p]*k%mod;
+            return;
+        }
+        pushdown(p,l,r);
+        if(s<=mid)update_mul(ls,l,mid,s,t,k);
+        if(t> mid)update_mul(rs,mid+1,r,s,t,k);
+        pushup(p);
+    }
+    int query_sum(int p,int l,int r,int s,int t)
+    {
+        if(s<=l&&r<=t)return sum[p];
+        int res=0;
+        pushdown(p,l,r);
+        if(s<=mid)res+=query_sum(ls,l,mid,s,t),res%=mod;
+        if(t> mid)res+=query_sum(rs,mid+1,r,s,t),res%=mod;
+        return res;
+    }
+};

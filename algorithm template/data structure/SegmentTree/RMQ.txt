@@ -1,0 +1,57 @@
+constexpr int INF=INT_MAX;
+struct SegTree
+{
+    #define ls (p<<1)
+    #define rs (p<<1|1)
+    #define mid ((l+r)>>1)
+    vector<int>min;
+    vector<int>max;
+    void assign(int n)
+    {
+        min.assign(n<<2, INF);
+        max.assign(n<<2,-INF);
+    }
+    void pushup(int p)
+    {
+        min[p]=std::min(min[ls],min[rs]);
+        max[p]=std::max(max[ls],max[rs]);
+    }
+    void build(int p,int l,int r,const vector<int>& a)
+    {
+        if(l==r)
+        {
+            min[p]=max[p]=a[l];
+            return;
+        }
+        build(ls,l,mid,a);
+        build(rs,mid+1,r,a);
+        pushup(p);
+    }
+    void update(int p,int l,int r,int x,int k)
+    {
+        if(l==r)
+        {
+            min[p]=max[p]=k;
+            return;
+        }
+        if(x<=mid)update(ls,l,mid,x,k);
+        else update(rs,mid+1,r,x,k);
+        pushup(p);
+    }
+    int query_min(int p,int l,int r,int s,int t)
+    {
+        if(s<=l&&r<=t)return min[p];
+        int res= INF;
+        if(s<=mid)res=std::min(res,query_min(ls,l,mid,s,t));
+        if(t> mid)res=std::min(res,query_min(rs,mid+1,r,s,t));
+        return res;
+    }
+    int query_max(int p,int l,int r,int s,int t)
+    {
+        if(s<=l&&r<=t)return max[p];
+        int res=-INF;
+        if(s<=mid)res=std::max(res,query_max(ls,l,mid,s,t));
+        if(t> mid)res=std::max(res,query_max(rs,mid+1,r,s,t));
+        return res;
+    }
+};

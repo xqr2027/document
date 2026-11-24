@@ -1,0 +1,139 @@
+#include<bits/stdc++.h>
+using namespace std;
+using ll=long long;
+constexpr int sigma=26;
+struct trie
+{
+    struct edge_t
+    {
+        int v,c,nxt;
+        edge_t(int v,int c,int nxt):v(v),c(c),nxt(nxt){}
+    };
+    vector<int> head;
+    vector<edge_t> edges;
+    int node_cnt;
+    trie():node_cnt(0)
+    {
+        newnode();
+        newnode();
+    }
+    int newnode()
+    {
+        head.emplace_back(-1);
+        return node_cnt++;
+    }
+    void addedge(int u,int v,int c)
+    {
+        edges.emplace_back(v,c,head[u]);
+        head[u]=(int)edges.size()-1;
+    }
+    void insert(const string& s)
+    {
+        int now=1;
+        for(char ch:s)
+        {
+            int c=ch-'a',idx=-1;
+            for(int e=head[now]; ~e; e=edges[e].nxt)
+            {
+                if(edges[e].c==c)
+                {
+                    idx=e;
+                    break;
+                }
+            }
+            if(idx==-1)
+            {
+                int v=newnode();
+                addedge(now,v,c);
+                idx=(int)edges.size()-1;
+            }
+            now=edges[idx].v;
+        }
+    }
+    size_t size()const
+    {
+        return node_cnt;
+    }
+};
+struct GeneralizedSuffixAutomaton
+{
+    struct node_t
+    {
+        int len,link;
+        array<int,sigma>to;
+        node_t():len(0),link(0)
+        {
+            to.fill(0);
+        }
+    };
+    vector<node_t> node;
+    vector<int> idx;
+    GeneralizedSuffixAutomaton()
+    {
+        node.emplace_back();
+        node.emplace_back();
+        node[1].len=0;
+        node[1].link=0;
+    }
+    int newnode()
+    {
+        node.emplace_back();
+        return (int)node.size()-1;
+    }
+    int insert(int last,int c)
+    {
+        int cur=newnode();
+        node[cur].len=node[last].len+1;
+        while(last&&!node[last].to[c])
+        {
+            node[last].to[c]=cur;
+            last=node[last].link;
+        }
+        if(!last)node[cur].link=1;
+        else
+        {
+            int q=node[last].to[c];
+            if(node[q].len==node[last].len+1)node[cur].link=q;
+            else
+            {
+                int clone=newnode();
+                node[clone].to  =node[q].to;
+                node[clone].link=node[q].link;
+                node[clone].len =node[last].len+1;
+                while(last&&node[last].to[c]==q)
+                {
+                    node[last].to[c]=clone;
+                    last=node[last].link;
+                }
+                node[q].link=node[cur].link=clone;
+            }
+        }
+        return cur;
+    }
+    void build(const trie& tr)
+    {
+        node.reserve(2*tr.size()+5);
+        idx.assign(tr.size(),0);
+        queue<int>q;
+        idx[1]=1;
+        q.push(1);
+        while(!q.empty())
+        {
+            int u=q.front();
+            q.pop();
+            for(int e=tr.head[u]; ~e; e=tr.edges[e].nxt)
+            {
+                int v=tr.edges[e].v,c=tr.edges[e].c;
+                idx[v]=insert(idx[u],c);
+                q.push(v);
+            }
+        }
+    }
+    ll solve()
+    {
+        ll ans=0;
+        int lim=node.size()-1;
+        for(int i=2;i<=lim;++i)ans+=node[i].len-node[node[i].link].len;
+        return ans;
+    }
+};

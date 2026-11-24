@@ -1,0 +1,59 @@
+struct SegTree
+{
+    #define ls (p<<1)
+    #define rs (p<<1|1)
+    #define mid ((l+r)>>1)
+    vector<int>sum;
+    vector<int>add;
+    void assign(int n)
+    {
+        sum.assign(n<<2,0);
+        add.assign(n<<2,0);
+    }
+    void pushup(int p)
+    {
+        sum[p]=sum[ls]+sum[rs];
+    }
+    void pushdown(int p,int l,int r)
+    {
+        if(!add[p])return;
+        add[ls]+=add[p];
+        add[rs]+=add[p];
+        sum[ls]+=add[p]*(mid-l+1);
+        sum[rs]+=add[p]*(r-mid);
+        add[p]=0;
+    }
+    void build(int p,int l,int r,const vector<int>& a)
+    {
+        if(l==r)
+        {
+            sum[p]=a[l];
+            return;
+        }
+        build(ls,l,mid,a);
+        build(rs,mid+1,r,a);
+        pushup(p);
+    }
+    void update_add(int p,int l,int r,int s,int t,int k)
+    {
+        if(s<=l&&r<=t)
+        {
+            sum[p]+=k*(r-l+1);
+            add[p]+=k;
+            return;
+        }
+        pushdown(p,l,r);
+        if(s<=mid)update_add(ls,l,mid,s,t,k);
+        if(t> mid)update_add(rs,mid+1,r,s,t,k);
+        pushup(p);
+    }
+    int query_sum(int p,int l,int r,int s,int t)
+    {
+        if(s<=l&&r<=t)return sum[p];
+        int res=0;
+        pushdown(p,l,r);
+        if(s<=mid)res+=query_sum(ls,l,mid,s,t);
+        if(t> mid)res+=query_sum(rs,mid+1,r,s,t);
+        return res;
+    }
+};

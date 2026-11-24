@@ -1,0 +1,131 @@
+struct LinkCutTree
+{
+    struct node_t
+    {
+        int to[2];
+        int fa;
+        int sum,val;
+        bool rev;
+        node_t():to(),fa(0),sum(0),val(0),rev(0){}
+        node_t(int v):to(),fa(0),sum(v),val(v),rev(0){}
+    };
+    vector<node_t>node;
+    int newnode()
+    {
+        node.emplace_back();
+        return node.size()-1;
+    }
+    int newnode(int v)
+    {
+        node.emplace_back(v);
+        return node.size()-1;
+    }
+    LinkCutTree()
+    {
+        newnode();
+    }
+    int cid(int u){return u==node[node[u].fa].to[1];}
+    void pushup(int p)
+    {
+        node[p].sum=node[node[p].to[0]].sum^node[p].val^node[node[p].to[1]].sum;
+    }
+    void apply_rev(int u)
+    {
+        node[u].rev^=1;
+        swap(node[u].to[0],node[u].to[1]);
+    }
+    void pushdown(int u)
+    {
+        if(!node[u].rev)return;
+        apply_rev(node[u].to[0]);
+        apply_rev(node[u].to[1]);
+        node[u].rev=0;
+    }
+    void pushdown_all(int u)
+    {
+        if(!isroot(u))pushdown_all(node[u].fa);
+        pushdown(u);
+    }
+    void rotate(int u)
+    {
+        int v=node[u].fa;
+        int w=node[v].fa;
+        int id=cid(u);
+        node[v].to[id]=node[u].to[!id];
+        if(node[v].to[id])node[node[v].to[id]].fa=v;
+        node[u].to[!id]=v;
+        if(!isroot(v))node[w].to[cid(v)]=u;
+        node[v].fa=u,node[u].fa=w;
+        pushup(v),pushup(u);
+    }
+    void splay(int u)
+    {
+        pushdown_all(u);
+        while(!isroot(u))
+        {
+            int v=node[u].fa;
+            if(!isroot(v))rotate(cid(u)==cid(v)?v:u);
+            rotate(u);
+        }
+    }
+    bool isroot(int u)
+    {
+        return u!=node[node[u].fa].to[0]&&u!=node[node[u].fa].to[1];
+    }
+    void access(int u)
+    {
+        for(int v=0;u;v=u,u=node[u].fa)
+        {
+            splay(u);
+            node[u].to[1]=v;
+            pushup(u);
+        }
+    }
+    void makeroot(int u)
+    {
+        access(u);
+        splay(u);
+        apply_rev(u);
+    }
+    int  findroot(int u)
+    {
+        access(u);
+        splay(u);
+        while(node[u].to[0])
+        {
+            pushdown(u);
+            u=node[u].to[0];
+        }
+        splay(u);
+        return u;
+    }
+    void link(int u,int v)
+    {
+        makeroot(u);
+        if(findroot(v)!=u)node[u].fa=v;
+    }
+    void cut(int u,int v)
+    {
+        makeroot(u);
+        access(v);
+        splay(v);
+        if(node[u].fa==v&&!node[u].to[1])
+        {
+            node[u].fa=node[v].to[0]=0;
+            pushup(v);
+        }
+    }
+    int  path_query(int u,int v)
+    {
+        makeroot(u);
+        access(v);
+        splay(v);
+        return node[v].sum;
+    }
+    void modify(int u,int k)
+    {
+        splay(u);
+        node[u].val=k;
+        pushup(u);
+    }
+}LCT;

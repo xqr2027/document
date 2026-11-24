@@ -1,0 +1,53 @@
+constexpr int sigma=62;
+inline int toint(int ch)
+{
+    if('a'<=ch&&ch<='z')return ch-'a';
+    if('A'<=ch&&ch<='Z')return ch-'A'+26;
+    if('0'<=ch&&ch<='9')return ch-'0'+52;
+    throw runtime_error("invaild charactor");
+}
+struct Trie
+{
+    struct node_t
+    {
+        array<int,sigma>to;
+        int cnt;
+        node_t():to(),cnt(0)
+        {
+            to.fill(-1);
+        }
+    };
+    vector<node_t>node;
+    int newnode()
+    {
+        node.emplace_back();
+        return node.size()-1;
+    }
+    Trie(){newnode();}
+    void insert(const string& s)
+    {
+        int now=0;
+        for(auto c:s)
+        {
+            int k=toint(c);
+            if(node[now].to[k]==-1)
+            {
+                int p=newnode();
+                node[now].to[k]=p;
+            }
+            now=node[now].to[k];
+            node[now].cnt++;
+        }
+    }
+    int query(const string& s)
+    {
+        int now=0;
+        for(auto c:s)
+        {
+            int k=toint(c);
+            if(node[now].to[k]==-1)return 0;
+            now=node[now].to[k];
+        }
+        return node[now].cnt;
+    }
+};

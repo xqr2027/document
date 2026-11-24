@@ -1,0 +1,33 @@
+namespace SuffixArray
+{
+    void get(const string& s,vector<int>& sa,vector<int>& rk,vector<int>& hei)
+    {
+        int n=s.size()-1;
+        sa.assign(n+1,0);
+        rk.assign(n+1,0);
+        hei.assign(n+1,0);
+        for(int i=1;i<=n;++i)sa[i]=i,rk[i]=s[i];
+        for(int k=1;k<=n;k<<=1)
+        {
+            auto cmp=[&](int u,int v)
+            {
+                if(rk[u]!=rk[v])return rk[u]<rk[v];
+                int ru=u+k<=n?rk[u+k]:-1;
+                int rv=v+k<=n?rk[v+k]:-1;
+                return ru<rv;
+            };
+            sort(sa.begin()+1,sa.end(),cmp);
+            vector<int>tmp(n+1);
+            tmp[sa[1]]=1;
+            for(int i=2;i<=n;++i)tmp[sa[i]]=tmp[sa[i-1]]+cmp(sa[i-1],sa[i]);
+            swap(tmp,rk);
+        }
+        for(int i=1,k=0;i<=n;++i)
+        {
+            if(rk[i]==1)continue;
+            if(k)--k;
+            while(s[i+k]==s[sa[rk[i]-1]+k])++k;
+            hei[rk[i]]=k;
+        }
+    }
+}

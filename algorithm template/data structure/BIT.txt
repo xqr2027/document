@@ -1,0 +1,7 @@
+struct BIT
+{
+    vector<int>bit;
+    void assign(int n){bit.assign(n+1,0);}
+    void add(int x,int v){for(;x<(int)bit.size();x+=x&-x)bit[x]+=v;}
+    int  qry(int x){int res=0;for(;x;x^=x&-x)res+=bit[x];return res;}
+};

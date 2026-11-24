@@ -1,0 +1,98 @@
+#include<bits/stdc++.h>
+using namespace std;
+// #define int long long
+using ll=long long;
+namespace SegTree
+{
+    #define mid ((l+r)>>1)
+    struct node_t
+    {
+        ll cnt;
+        int ls,rs;
+        node_t():cnt(0),ls(0),rs(0){}
+    };
+    deque<node_t>node;
+    vector<int>root;
+    int newnode()
+    {
+        node.emplace_back();
+        return node.size()-1;
+    }
+    int newroot(int v=0)
+    {
+        root.emplace_back(v);
+        return root.size()-1;
+    }
+    void init()
+    {
+        newnode();
+        newnode();
+        newroot();
+        newroot(1);
+    }
+    void pushup(int p)
+    {
+        node[p].cnt=0;
+        if(node[p].ls)node[p].cnt+=node[node[p].ls].cnt;
+        if(node[p].rs)node[p].cnt+=node[node[p].rs].cnt;
+    }
+    int merge(int u,int v,int l,int r)
+    {
+        if(!u||!v)return u|v;
+        if(l==r)
+        {
+            node[u].cnt+=node[v].cnt;
+            node[v].cnt=0;
+            return u;
+        }
+        node[u].ls=merge(node[u].ls,node[v].ls,l,mid);
+        node[u].rs=merge(node[u].rs,node[v].rs,mid+1,r);
+        pushup(u);
+        return u;
+    }
+    int split(int& p,int l,int r,int s,int t)
+    {
+        if(!p)return 0;
+        if(s<=l&&r<=t)
+        {
+            int res=p;
+            p=0;
+            return res;
+        }
+        int q=newnode();
+        if(s<=mid)node[q].ls=split(node[p].ls,l,mid,s,t);
+        if(t> mid)node[q].rs=split(node[p].rs,mid+1,r,s,t);
+        pushup(p),pushup(q);
+        return q;
+    }
+    int insert(int& p,int l,int r,int x,int k=1)
+    {
+        if(!p)p=newnode();
+        if(l==r)
+        {
+            node[p].cnt+=k;
+            return p;
+        }
+        if(x<=mid)insert(node[p].ls,l,mid,x,k);
+        else insert(node[p].rs,mid+1,r,x,k);
+        pushup(p);
+        return p;
+    }
+    ll query(int p,int l,int r,int s,int t)
+    {
+        if(!p)return 0;
+        if(s<=l&&r<=t)return node[p].cnt;
+        ll res=0;
+        if(s<=mid)res+=query(node[p].ls,l,mid,s,t);
+        if(t> mid)res+=query(node[p].rs,mid+1,r,s,t);
+        return res;
+    }
+    int find(int p,int l,int r,int k)
+    {
+        if(!p||node[p].cnt<k)return -1;
+        if(l==r)return l;
+        ll left=node[node[p].ls].cnt;
+        if(left>=k)return find(node[p].ls,l,mid,k);
+        return find(node[p].rs,mid+1,r,k-left);
+    }
+};// namespace SegTree
