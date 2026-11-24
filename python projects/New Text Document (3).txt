@@ -1,0 +1,66 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# 设置中文字体
+plt.rcParams['font.sans-serif'] = ['SimHei', 'Arial Unicode MS', 'sans-serif']
+plt.rcParams['axes.unicode_minus'] = False
+
+# ================= 配置区域 =================
+p = np.array([-1, 1, 2])
+# ============================================
+
+# 1. 生成数据
+x_min, x_max = -3, 4
+x = np.linspace(x_min, x_max, 500)
+y = np.sum(np.abs(x[:, None] - p), axis=1)
+
+# 2. 开始绘图
+plt.figure(figsize=(8, 5))
+plt.plot(x, y, 'b-', linewidth=2, label=r'$f(x) = \sum |x - p_i|$')
+
+# 3. 标记拐点
+for pi in p:
+    yi = np.sum(np.abs(pi - p))
+    plt.plot(pi, yi, 'ro', markersize=6)
+    plt.text(pi, yi + 0.8, f'x={pi}', ha='center', color='darkred', fontsize=10)
+
+ax = plt.gca()
+
+# ================= 修复“断了”的核心代码 =================
+# 1. 将底部(X轴)和左侧(Y轴)的边框移动到原点 (0, 0)
+# 这样刻度标签也会跟着移动到原点，不会“断”开
+ax.spines['bottom'].set_position('zero')
+ax.spines['left'].set_position('zero')
+
+# 2. 隐藏顶部和右侧的边框
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+
+# 3. 强制刻度线附着在移动后的坐标轴上
+ax.xaxis.set_ticks_position('bottom')
+ax.yaxis.set_ticks_position('left')
+
+# 4. 获取当前坐标轴的范围，用于确定箭头位置
+xlim = ax.get_xlim()
+ylim = ax.get_ylim()
+
+# 5. 在坐标轴末端画箭头
+# 使用 annotate，并设置 clip_on=False 防止箭头尖端被图表边缘切断
+ax.annotate('', xy=(xlim[1], 0), xytext=(xlim[1]-0.1, 0),
+            arrowprops=dict(arrowstyle='->', color='black', lw=1.5),
+            clip_on=False)
+            
+ax.annotate('', xy=(0, ylim[1]), xytext=(0, ylim[1]-0.1),
+            arrowprops=dict(arrowstyle='->', color='black', lw=1.5),
+            clip_on=False)
+# ==========================================================
+
+# 6. 基础设置
+plt.xticks(np.arange(int(x_min), int(x_max) + 1, 1)) # 强制整数刻度
+plt.title('绝对值求和函数图像 (完美十字坐标系)', fontsize=12, fontweight='bold', pad=15)
+plt.xlim(x_min, x_max)
+plt.ylim(0, max(y) + 1) 
+plt.grid(True, linestyle=':', alpha=0.5, axis='y') 
+
+plt.tight_layout()
+plt.show()

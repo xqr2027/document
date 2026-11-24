@@ -1,0 +1,114 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# 设置中文字体
+plt.rcParams['font.sans-serif'] = ['SimHei', 'Arial Unicode MS', 'sans-serif']
+plt.rcParams['axes.unicode_minus'] = False
+
+x = np.linspace(0, 10, 500)
+
+# ==========================================
+# 定义各个阶段的函数
+# ==========================================
+
+# 阶段 1: 叶子节点 A 和 B
+f_A = np.abs(x - 2)
+f_B = np.abs(x - 5)
+
+# 阶段 2: 合并子树 (未砍斜坡)
+f_merge = f_A + f_B
+
+# 阶段 3: 砍掉多余斜坡 (弹出 1 次)
+# 把 x > 5 时斜率 2 的部分，砍成斜率 1
+f_cut1 = np.where(x < 5, f_merge, 3 + (x - 5))
+
+# 阶段 4: 提取盆底 L 和 R (再弹出 2 次)
+# 把 x > 2 时斜率 1 和 0 的部分，全部砍成斜率 0
+f_cut2 = np.where(x < 2, f_merge, 3)
+
+# 阶段 5: 加上边权 c=3，平移盆底 (插入 L+c 和 R+c)
+# 最终函数 f_U
+f_U = np.zeros_like(x)
+for i, val in enumerate(x):
+    if val < 2:
+        f_U[i] = 10 - 2 * val
+    elif val < 5:
+        f_U[i] = 8 - val
+    elif val <= 8:
+        f_U[i] = 3
+    else:
+        f_U[i] = val - 5
+
+# ==========================================
+# 绘图辅助函数
+# ==========================================
+def plot_step(ax, x, y, title, stack_state, slope_info, points=None, highlight_flat=False):
+    ax.plot(x, y, 'b-', linewidth=2, label='当前函数')
+    ax.set_title(title, fontsize=12, fontweight='bold')
+    ax.set_xlabel('目标距离 x')
+    ax.set_ylabel('最小代价')
+    ax.grid(True, linestyle=':', alpha=0.6)
+    ax.set_xlim(0, 10)
+    ax.set_ylim(0, 12)
+    
+    # 标注堆的状态
+    ax.text(0.2, 11, f'堆状态: {stack_state}', fontsize=10, color='red', 
+            bbox=dict(facecolor='white', alpha=0.8, edgecolor='none'))
+    ax.text(0.2, 10, f'斜率变化: {slope_info}', fontsize=10, color='darkgreen',
+            bbox=dict(facecolor='white', alpha=0.8, edgecolor='none'))
+    
+    # 画出拐点
+    if points:
+        for px, py, txt in points:
+            ax.plot(px, py, 'ro', markersize=6)
+            ax.text(px + 0.1, py + 0.3, txt, fontsize=9, color='darkred')
+            
+    # 高亮平底区间
+    if highlight_flat:
+        ax.axhspan(2.9, 3.1, xmin=2/10, xmax=5/10, color='green', alpha=0.2)
+
+# ==========================================
+# 开始画 5 张图
+# ==========================================
+fig, axs = plt.subplots(2, 3, figsize=(15, 8))
+fig.suptitle('Slope Trick 核心推导：一步一图', fontsize=16, fontweight='bold', y=0.98)
+
+# 图 1: 初始状态
+axs[0, 0].plot(x, f_A, 'b--', alpha=0.6, label='f_A(x) = |x-2|')
+axs[0, 0].plot(x, f_B, 'r--', alpha=0.6, label='f_B(x) = |x-5|')
+axs[0, 0].set_title('步骤 1: 叶子节点 A 和 B', fontsize=12, fontweight='bold')
+axs[0, 0].text(0.2, 11, 'A的堆: {2, 2}', fontsize=10, color='blue')
+axs[0, 0].text(0.2, 10, 'B的堆: {5, 5}', fontsize=10, color='red')
+axs[0, 0].grid(True, linestyle=':', alpha=0.6)
+axs[0, 0].set_xlim(0, 10)
+axs[0, 0].set_ylim(0, 12)
+axs[0, 0].legend(loc='upper right')
+
+# 图 2: 合并子树
+plot_step(axs[0, 1], x, f_merge, '步骤 2: 合并子树 (堆合并)', 
+          '{5, 5, 2, 2}', '-2 → 0 → +2 (右侧斜率=2)', 
+          [(2, 3, '拐点2'), (5, 3, '拐点5')], highlight_flat=True)
+
+# 图 3: 砍掉多余斜坡
+plot_step(axs[0, 2], x, f_cut1, '步骤 3: 砍掉多余斜坡 (弹出 1 次)', 
+          '{5, 2, 2}', '-2 → -1 → 0 → +1 (右侧斜率=1)', 
+          [(2, 3, '拐点2'), (5, 3, '拐点5')])
+
+# 图 4: 提取盆底 L 和 R
+plot_step(axs[1, 0], x, f_cut2, '步骤 4: 提取盆底 L 和 R (再弹出 2 次)', 
+          '{2}', '-2 → -1 → 0 (右侧斜率=0)\n提取出 L=2, R=5', 
+          [(2, 3, '拐点2')])
+
+# 图 5: 加边权平移
+plot_step(axs[1, 1], x, f_U, '步骤 5: 加边权 c=3，平移盆底 (插入 5 和 8)', 
+          '{8, 5, 2}', '-2 → -1 → 0 → +1 (右侧斜率=1)', 
+          [(2, 6, '拐点2'), (5, 3, '拐点5(L+c)'), (8, 3, '拐点8(R+c)')], highlight_flat=True)
+
+# 隐藏最后一个空白子图
+axs[1, 2].axis('off')
+axs[1, 2].text(0.5, 0.5, '完美闭环！\n堆里的数字精确对应\n绿色平底区间的端点', 
+               fontsize=14, ha='center', va='center', color='darkgreen',
+               transform=axs[1, 2].transAxes)
+
+plt.tight_layout(rect=[0, 0, 1, 0.95])
+plt.show()

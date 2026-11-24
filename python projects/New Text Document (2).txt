@@ -1,0 +1,28 @@
+import matplotlib.pyplot as plt
+from matplotlib.patches import Polygon
+plt.rcParams['font.sans-serif']=['SimHei','Noto Sans CJK SC','Microsoft YaHei']
+plt.rcParams['axes.unicode_minus']=False
+k,B=12,4
+fig,ax=plt.subplots(figsize=(10,8))
+for t in range(k+1):
+    ax.axvline(t,color='#eeeeee',zorder=0); ax.axhline(t,color='#eeeeee',zorder=0)
+ax.add_patch(Polygon([(0,0),(B,0),(0,B)],fc='orange',alpha=.15))
+ax.add_patch(Polygon([(k,k),(k-B,k),(k,k-B)],fc='teal',alpha=.15))
+ax.plot([0,B],[B,0],color='orange',lw=3,label='检查线1 F[p]（小源点打包）')
+ax.plot([k-B,k],[k,k-B],color='teal',lw=3,label='检查线2 G[q]（小终点打包）')
+ax.scatter([0,1,0,2],[0,0,1,1],color='orange',s=60,label='小源点')
+ax.scatter([12,11,12],[12,12,11],color='teal',s=60,label='小终点')
+ax.scatter([6,7],[2,4],color='orange',marker='*',s=200,label='大源点(少)')
+ax.scatter([9,4],[6,7],color='teal',marker='*',s=200,label='大终点(少)')
+ax.annotate('小×小 O(B²)',xy=(10,10),xytext=(2,2),arrowprops=dict(arrowstyle='->',ls='--',color='gray'))
+ax.annotate('大源×小终 O(B)',xy=(10,8),xytext=(6,2),arrowprops=dict(arrowstyle='->',ls='--',color='gray'))
+ax.annotate('小源×大终 O(B)',xy=(4,7),xytext=(2,2),arrowprops=dict(arrowstyle='->',ls='--',color='gray'))
+ax.annotate('大×大 暴力',xy=(9,6),xytext=(7,4),arrowprops=dict(arrowstyle='->',ls='--',color='gray'))
+ax.text(0.5,2.6,'小源点：正向DP打包',color='darkorange')
+ax.text(8.5,11.2,'小终点：反向DP打包',color='teal')
+ax.set_xlim(-.5,k+.5); ax.set_ylim(-.5,k+.5); ax.set_aspect('equal')
+ax.set_xticks(range(0,k+1,2)); ax.set_yticks(range(0,k+1,2))
+ax.legend(loc='upper left',bbox_to_anchor=(1.02,1))
+ax.set_title('O(L) 压缩：小点打包到检查线，大点暴力')
+plt.subplots_adjust(right=0.72)
+plt.show()

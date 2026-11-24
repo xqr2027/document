@@ -1,0 +1,53 @@
+import matplotlib.pyplot as plt
+
+# ===== 折线顶点（x 必须单调递增；斜率递增 => 下凸，正是 Slope Trick 配图）=====
+points = [(-3, 11), (-1, 5), (1, 3), (4,3)]
+
+# 需要标红点并写 "x=…" 的拐点（points 的子集）
+kinks = [(-1, 5), (1, 3)]
+
+xs = [p[0] for p in points]
+ys = [p[1] for p in points]
+
+fig, ax = plt.subplots(figsize=(7, 6))
+fig.patch.set_facecolor('white')
+
+# 画布底色 + 完整黑色边框
+ax.set_facecolor('#f8f8fc')
+for s in ax.spines.values():
+    s.set_visible(True)
+    s.set_color('black')
+    s.set_linewidth(0.8)
+
+# 淡网格（置于折线下方）
+ax.grid(True, color='#d8d8e0', linewidth=0.6, linestyle='-')
+ax.set_axisbelow(True)
+
+# 深蓝折线
+ax.plot(xs, ys, color='#1a1a9e', linewidth=1.8, zorder=3)
+
+# 红色拐点
+kx = [p[0] for p in kinks]
+ky = [p[1] for p in kinks]
+ax.scatter(kx, ky, color='red', s=28, zorder=4)
+
+# 拐点上方红色标注
+for (x, y) in kinks:
+    ax.text(x, y + 0.6, f"x={x}", color='darkred',
+            fontsize=9, ha='center', va='bottom', zorder=5)
+
+# 坐标范围与刻度
+ax.set_xlim(-3, 4)
+ax.set_ylim(0, 12)
+ax.set_xticks(range(-3, 5))
+ax.set_yticks(range(0, 13, 2))
+
+# 轴标签
+ax.set_xlabel('x', fontsize=11)
+ax.set_ylabel('f(x)', fontsize=11)
+
+plt.tight_layout()
+plt.show()
+
+# 如需存图，注释掉 plt.show()，改用：
+# plt.savefig("slope_trick.png", dpi=300, bbox_inches='tight')
